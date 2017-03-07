@@ -2,6 +2,8 @@
 
 from mailbox import Maildir, MaildirMessage
 from typing import List
+from datetime import datetime, timedelta
+from functools import wraps
 
 
 class Mailbox(Maildir):
@@ -10,36 +12,63 @@ class Mailbox(Maildir):
 
 def init(mailbox_base: str, mailbox_names: List[str]) -> List[Mailbox]:
     from os.path import join
-    mailboxes = []
+    mailboxes = {}
     for mailbox_name in mailbox_names:
-        
+        mailboxes[mailbox_name] = Mailbox(join(mailbox_base, mailbox_name),
+                                          factory=Message.message_factory)
+    return mailboxes
 
+
+def condition(f):
+    """
+    Decorator for conditions, that handles errors, and maybe interrupts filterchain execution
+    """
+    @wraps(f)
+    def try_execute(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except:
+            # TODO: return something useful
+            pass
+    return try_execute
 
 
 class Message(MaildirMessage):
-    def __init__(self, **kwargs):
+
+    @staticmethod
+    def message_factory(message):
+        return Message(message)
+
+    def __init__(self, *args, **kwargs):
         self.passes_conditions = True
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
     # conditions
+    @condition
     def is_from(self, target: str):
         # type: (str) -> Message
-        if self.passes_conditions and target in self['from']:
+        if self.passes_conditions and target in str(self['from']):
             return self
         self.passes_conditions = False
         return self
 
+    @condition
     def subject_has(self, subject:str):
         # type: (str) -> Message
-        if self.passes_conditions and subject in self['Subject']:
+        if self.passes_conditions and subject in str(self['subject']):
             return self
         self.passes_conditions = False
         return self
 
+    @condition
     def older_than(self, timespec):
         # type: (str) -> Message
         if self.passes_conditions:
-            raise NotImplementedError()
+            now = datetime.now()
+            if 'd' in timespec:
+                d = now - timedelta(days=int(timespec[:-1]))
+                if datetime.fromtimestamp(self.get_date()) < d:
+                    return self
         self.passes_conditions = False
         return self
 
@@ -54,16 +83,14 @@ class Message(MaildirMessage):
         if self.passes_conditions:
             self.add_flag('T')
 
-    def move_to(self, box: str):
+    def move_to(self, box: Mailbox):
         # type: (str) -> Message
         # TODO: add mailbox creation if it doesn't exist
-        global mailboxes
         if self.passes_conditions:
-            key = mailboxes[box].add(self)
+            key = box.add(self)
             # Now, let's mark ourselves for deletion
             self.delete()
-            return mailboxes[box].get(key)
-        raise RuntimeError('could not move message %s to box %s',
-                           self, mailboxes[box])
+            return box.get(key)
+        #raise RuntimeError('could not move message %s to box %s: conditions unfulfilled' % (self, box))
 
 
