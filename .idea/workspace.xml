@@ -20,8 +20,8 @@
           <file leaf-file-name="bureaucrate.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/bureaucrate/bureaucrate.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="252">
-                  <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+                <state relative-caret-position="-176">
+                  <caret line="14" column="8" lean-forward="false" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
                   <folding>
                     <element signature="e#25#68#0" expanded="true" />
                   </folding>
@@ -51,11 +51,11 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="sample.mailsort" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/sample.mailsort">
+          <file leaf-file-name="sample_config.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/sample_config.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="36">
-                  <caret line="7" column="40" lean-forward="false" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="40" />
+                  <caret line="9" column="40" lean-forward="false" selection-start-line="9" selection-start-column="12" selection-end-line="9" selection-end-column="40" />
                   <folding />
                 </state>
               </provider>
@@ -75,11 +75,11 @@
       </split-first>
       <split-second>
         <leaf>
-          <file leaf-file-name="sample.mailsort" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/sample.mailsort">
+          <file leaf-file-name="sample_config.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/sample_config.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="54">
-                  <caret line="3" column="6" lean-forward="false" selection-start-line="3" selection-start-column="6" selection-end-line="3" selection-end-column="6" />
+                <state relative-caret-position="162">
+                  <caret line="9" column="79" lean-forward="false" selection-start-line="9" selection-start-column="79" selection-end-line="9" selection-end-column="79" />
                   <folding />
                 </state>
               </provider>
@@ -96,6 +96,7 @@
         <option value="$PROJECT_DIR$/bureaucrate/models.py" />
         <option value="$PROJECT_DIR$/tests/test_bureaucrate.py" />
         <option value="$PROJECT_DIR$/sample.mailsort" />
+        <option value="$PROJECT_DIR$/sample_config.py" />
         <option value="$PROJECT_DIR$/bureaucrate/bureaucrate.py" />
       </list>
     </option>
@@ -422,18 +423,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/sample.mailsort">
+    <entry file="file://$PROJECT_DIR$/sample_config.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="36">
-          <caret line="7" column="40" lean-forward="false" selection-start-line="7" selection-start-column="12" selection-end-line="7" selection-end-column="40" />
+          <caret line="9" column="40" lean-forward="false" selection-start-line="9" selection-start-column="12" selection-end-line="9" selection-end-column="40" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/bureaucrate/bureaucrate.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="14" column="0" lean-forward="true" selection-start-line="14" selection-start-column="0" selection-end-line="14" selection-end-column="0" />
+        <state relative-caret-position="-176">
+          <caret line="14" column="8" lean-forward="false" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="8" />
           <folding>
             <element signature="e#25#68#0" expanded="true" />
           </folding>

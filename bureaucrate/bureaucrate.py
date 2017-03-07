@@ -8,16 +8,12 @@ class Mailbox(Maildir):
     pass
 
 
-mailboxes: List[Mailbox]
-mailboxes_name: str
-mailboxes_base: str
+def init(mailbox_base: str, mailbox_names: List[str]) -> List[Mailbox]:
+    from os.path import join
+    mailboxes = []
+    for mailbox_name in mailbox_names:
+        
 
-
-def init():
-    """
-    Initialises the global vars
-    """
-    global mailboxes, mailboxes_name, mailboxes_base
 
 
 class Message(MaildirMessage):
