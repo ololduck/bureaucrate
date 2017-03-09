@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from mailbox import Maildir, MaildirMessage
-from typing import List
+from typing import List, Optional
 from datetime import datetime, timedelta
 from functools import wraps
 
 
 class Mailbox(Maildir):
-    pass
+    def __iter__(self):
+        for k, v in self.iteritems():
+            v.mailbox = self
+            v.key = k
+            yield v
 
 
 def init(mailbox_base: str, mailbox_names: List[str]) -> List[Mailbox]:
@@ -41,6 +45,7 @@ class Message(MaildirMessage):
 
     def __init__(self, *args, **kwargs):
         self.passes_conditions = True
+        self.mailbox: Optional[Mailbox]
         super().__init__(*args, **kwargs)
 
     # conditions
@@ -82,15 +87,16 @@ class Message(MaildirMessage):
     def delete(self):
         if self.passes_conditions:
             self.add_flag('T')
+            self.mailbox.remove(self.key)
 
     def move_to(self, box: Mailbox):
-        # type: (str) -> Message
+        # type: (Mailbox) -> Message
         # TODO: add mailbox creation if it doesn't exist
         if self.passes_conditions:
             key = box.add(self)
             # Now, let's mark ourselves for deletion
             self.delete()
             return box.get(key)
-        #raise RuntimeError('could not move message %s to box %s: conditions unfulfilled' % (self, box))
+        # raise RuntimeError('could not move message %s to box %s: conditions unfulfilled' % (self, box))
 
 
