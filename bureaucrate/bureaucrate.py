@@ -84,19 +84,28 @@ class Message(MaildirMessage):
             self.add_flag('S')
         return self
 
-    def delete(self):
+    def star(self):
+        # type: () -> Message
+        if self.passes_conditions:
+            self.add_flag('F')
+        return self
+
+    def delete(self) -> None:
+        """
+        Warning! Deletion is final and will break the execution chain!
+        :return: None
+        """
         if self.passes_conditions:
             self.add_flag('T')
             self.mailbox.remove(self.key)
+        return None
 
     def move_to(self, box: Mailbox):
         # type: (Mailbox) -> Message
         # TODO: add mailbox creation if it doesn't exist
         if self.passes_conditions:
             key = box.add(self)
-            # Now, let's mark ourselves for deletion
             self.delete()
             return box.get(key)
-        # raise RuntimeError('could not move message %s to box %s: conditions unfulfilled' % (self, box))
 
 
