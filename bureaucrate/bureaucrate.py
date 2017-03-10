@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from mailbox import Maildir, MaildirMessage
-from typing import List, Optional
+from typing import List, Optional, Callable
 from datetime import datetime, timedelta
 from functools import wraps
 
@@ -30,7 +30,9 @@ def condition(f):
     @wraps(f)
     def try_execute(*args, **kwargs):
         try:
-            return f(*args, **kwargs)
+            res, m = f(*args, **kwargs)
+            m.condition_results.append(res)
+            return m
         except:
             # TODO: return something useful
             pass
@@ -44,38 +46,39 @@ class Message(MaildirMessage):
         return Message(message)
 
     def __init__(self, *args, **kwargs):
-        self.passes_conditions = True
+        self.conditions_results = []
         self.mailbox: Optional[Mailbox]
         super().__init__(*args, **kwargs)
 
-    # conditions
     @condition
-    def is_from(self, target: str):
-        # type: (str) -> Message
-        if self.passes_conditions and target in str(self['from']):
-            return self
-        self.passes_conditions = False
-        return self
+    def negate(self):
+        # type: () -> (bool, Message)
+        """
+        Changes the result of last condition to the opposite of what it was
+        """
+        # bool(a) != bool(b) is a x-or
+        self.conditions_results[-1] = self.conditions_results[-1] != True
+        return True, self
 
     @condition
-    def subject_has(self, subject:str):
-        # type: (str) -> Message
-        if self.passes_conditions and subject in str(self['subject']):
-            return self
-        self.passes_conditions = False
-        return self
+    def is_from(self, target: str):
+        # type: (str) -> (bool, Message)
+        return target in str(self['from']), self
+
+    @condition
+    def subject_has(self, subject: str):
+        # type: (str) -> (bool, Message)
+        return subject in str(self['subject']), self
 
     @condition
     def older_than(self, timespec):
-        # type: (str) -> Message
-        if self.passes_conditions:
-            now = datetime.now()
-            if 'd' in timespec:
-                d = now - timedelta(days=int(timespec[:-1]))
-                if datetime.fromtimestamp(self.get_date()) < d:
-                    return self
-        self.passes_conditions = False
-        return self
+        # type: (str) -> (bool, Message)
+        now = datetime.now()
+        if 'd' in timespec:
+            d = now - timedelta(days=int(timespec[:-1]))
+            if datetime.fromtimestamp(self.get_date()) < d:
+                return True, self
+        return False, self
 
     # actions
     def mark_as_read(self):
@@ -102,7 +105,6 @@ class Message(MaildirMessage):
 
     def move_to(self, box: Mailbox):
         # type: (Mailbox) -> Message
-        # TODO: add mailbox creation if it doesn't exist
         if self.passes_conditions:
             key = box.add(self)
             self.delete()
