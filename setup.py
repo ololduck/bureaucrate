@@ -9,14 +9,9 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'Click>=6.0',
-    # TODO: put package requirements here
-]
+requirements = []
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+test_requirements = []
 
 setup(
     name='bureaucrate',
@@ -31,11 +26,7 @@ setup(
     ],
     package_dir={'bureaucrate':
                  'bureaucrate'},
-    entry_points={
-        'console_scripts': [
-            'bureaucrate=bureaucrate.cli:main'
-        ]
-    },
+    entry_points={},
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
@@ -46,13 +37,8 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
     tests_require=test_requirements

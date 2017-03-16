@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+from email.header import decode_header
 from functools import wraps
 from mailbox import Maildir, MaildirMessage
 from os import listdir
-from os.path import join, isdir
+from os.path import join, expanduser
 from typing import List, Optional, Dict
 
 from .utils import parse_timespec
+
+
+class ConditionError(Exception):
+    pass
 
 
 class Mailbox(Maildir):
@@ -18,12 +23,13 @@ class Mailbox(Maildir):
             yield v
 
 base_path = str
-mailboxes = Dict[Mailbox]
+mailboxes = Dict[str, Mailbox]
 
 
 def get_mailbox(mb_id: str) -> Mailbox:
     """
-    gets or creates a Mailbox representation of the directory at base_path + mb_id
+    gets or creates a Mailbox representation of the directory at
+    base_path + mb_id
     :param mb_id:
     :return:
     """
@@ -36,11 +42,11 @@ def get_mailbox(mb_id: str) -> Mailbox:
     return mb
 
 
-def init(mailbox_base: str, mailbox_names: List[str]) -> List[Mailbox]:
+def init(mailbox_base: str, mailbox_names: List[str]=[]) -> List[Mailbox]:
     global mailboxes, base_path
-    base_path = mailbox_base
+    base_path = expanduser(mailbox_base)
     if not mailbox_names:
-        mailbox_names = [e for e in listdir(mailbox_base) if isdir(e)]
+        mailbox_names = [e for e in listdir(base_path)]
     mailboxes = {}
     for mailbox_name in mailbox_names:
         mailboxes[mailbox_name] = Mailbox(join(mailbox_base, mailbox_name),
@@ -56,11 +62,10 @@ def condition(f):
     def try_execute(*args, **kwargs):
         try:
             res, m = f(*args, **kwargs)
-            m.condition_results.append(res)
+            m.conditions_results.append(res)
             return m
-        except:
-            # TODO: return something useful
-            pass
+        except Exception as e:
+            raise ConditionError(e)
     return try_execute
 
 
@@ -78,6 +83,15 @@ def action(f):
 
 class Message(MaildirMessage):
 
+    def __getitem__(self, name):
+        message = []
+        for t in decode_header(super().__getitem__(name)):
+            if type(t[0]) is bytes:
+                message.append(t[0].decode(t[1] or 'ASCII'))
+            if type(t[0]) is str:
+                message.append(t[0])
+        return ''.join(message)
+
     @staticmethod
     def message_factory(message):
         return Message(message)
@@ -86,6 +100,7 @@ class Message(MaildirMessage):
         self.conditions_results = []
         self.mailbox = Optional[Mailbox]
         super().__init__(*args, **kwargs)
+
 
     @condition
     def negate(self):
@@ -104,10 +119,12 @@ class Message(MaildirMessage):
 
     @condition
     def starred(self):
+        # type: () -> (bool, Message)
         return 'F' in self.get_flags(), self
 
     @condition
     def read(self):
+        # type: () -> (bool, Message)
         return 'S' in self.get_flags(), self
 
     @condition
@@ -118,7 +135,7 @@ class Message(MaildirMessage):
     @condition
     def older_than(self, timespec: str):
         # type: (str) -> (bool, Message)
-        now = datetime.now()
+        now = datetime.datetime.now()
         if 'd' in timespec:
             d = now - parse_timespec(timespec)
             if datetime.fromtimestamp(self.get_date()) < d:
@@ -127,7 +144,15 @@ class Message(MaildirMessage):
 
     @condition
     def is_list(self):
+        # type: () -> (bool, Message)
         return "List-Id" in self.keys(), self
+
+    @condition
+    def list_is(self, list: str):
+        # type: (str) -> (bool, Message)
+        if self.get_list():
+            return list in self.get_list(), self
+        return False, self
 
     # actions
     @action
@@ -160,7 +185,8 @@ class Message(MaildirMessage):
         self.delete()
         return box.get(key)
 
-    def get_list(self):
-        return str(self['list-id']).strip('<').strip('>')
+    def get_list(self) -> str:
+        s = str(self.get('list-id', ''))
+        return s[s.find('<'):s.find('>')].strip('<').strip('>')
 
 

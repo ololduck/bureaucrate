@@ -18,22 +18,26 @@ bureaucrate
      :alt: Updates
 
 
-A maildir-based executer of rules, destined to sort and automate mail
+A maildir-based executer of rules, destined to sort and automate mail.
 
+Here little sample, taken from `sample_config.py`:
+
+.. code-block:: python
+   # delete mails older than 60 days in mb 'notifications'
+   for message in mailboxes['notifications']:
+       message.older_than('60d').delete()
+
+.. note::
+   This is still a heavy work in progress, as documentation is sparse at best.
 
 * Free software: MIT license
 * Documentation: https://bureaucrate.readthedocs.io.
 
 
-Features
---------
-
-* TODO
-
 Credits
 ---------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template. And it's quite nice, you should use it too.
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
