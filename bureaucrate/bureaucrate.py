@@ -154,6 +154,11 @@ class Message(MaildirMessage):
             return list in self.get_list(), self
         return False, self
 
+    @condition
+    def has_replied(self):
+        # type: () -> (bool, Message)
+        return 'R' in self.get_flags(), self
+
     # actions
     @action
     def mark_as_read(self):
