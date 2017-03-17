@@ -22,7 +22,6 @@ deploy:
     repo: paulollivier/bureaucrate
     tags: true
 env:
-- TOXENV=py36
 - TOXENV=py35
 install: pip install -U tox
 language: python
