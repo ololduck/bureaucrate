@@ -15,7 +15,7 @@ test_requirements = []
 
 setup(
     name='bureaucrate',
-    version='0.2.1',
+    version='0.2.2',
     description="A maildir-based executer of rules, destined to sort and automate mail",
     long_description=readme + '\n\n' + history,
     author="Paul Ollivier",
