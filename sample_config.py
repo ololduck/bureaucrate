@@ -20,4 +20,4 @@ for message in mailboxes['notifications']:
     message.older_than('60d').delete()
 
 for message in mailboxes['Spam']:
-    message.older_than('60d').delete()
+    message.older_than('60d').has_replied().negate().delete()
