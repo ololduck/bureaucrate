@@ -6,7 +6,9 @@ from functools import wraps
 from mailbox import Maildir, MaildirMessage
 from os import listdir
 from os.path import join, expanduser
+from subprocess import run, PIPE
 from typing import List, Optional, Dict
+
 
 from .utils import parse_timespec
 
@@ -195,8 +197,14 @@ class Message(MaildirMessage):
         self.delete()
         return box.get(key)
 
-    def get_list(self) -> str:
-        s = str(self.get('list-id', ''))
-        return s[s.find('<'):s.find('>')].strip('<').strip('>')
-
-
+    @action
+    def forward(self, command, mto, mfrom=None):
+        m = Message()
+        m['From'] = mfrom or self['to']
+        m['To'] = mto
+        m['Subject'] = "Fwd: " + self['subject']
+        m.set_payload(self.get_payload())
+        run(command,
+            stdin=PIPE, stdout=PIPE, input=m.as_string(),
+            shell=True, check=True, encoding='utf-8')
+        return self
