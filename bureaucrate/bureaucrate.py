@@ -75,9 +75,12 @@ def action(f):
     """
     @wraps(f)
     def decorate(message, *args, **kwargs):
-        if message.conditions_results.count(True) == len(message.conditions_results):
-            return f(message, *args, **kwargs)
-        return None
+        if message.conditions_results.count(True) == \
+                len(message.conditions_results):
+            r = f(message, *args, **kwargs)
+            return r
+        message.conditions_results = []
+        return message
     return decorate
 
 
@@ -87,7 +90,11 @@ class Message(MaildirMessage):
         message = []
         for t in decode_header(super().__getitem__(name)):
             if type(t[0]) is bytes:
-                message.append(t[0].decode(t[1] or 'ASCII'))
+                if t[1] == 'unknown-8bit':
+                    raise ValueError('Incorrect encoding for Message: %s' %
+                                     super().__getitem__('subject'))
+                else:
+                    message.append(t[0].decode(t[1] or 'ASCII'))
             if type(t[0]) is str:
                 message.append(t[0])
         return ''.join(message)
@@ -101,21 +108,19 @@ class Message(MaildirMessage):
         self.mailbox = Optional[Mailbox]
         super().__init__(*args, **kwargs)
 
-
     @condition
     def negate(self):
         # type: () -> (bool, Message)
         """
         Changes the result of last condition to the opposite of what it was
         """
-        # bool(a) != bool(b) is a x-or
-        self.conditions_results[-1] = self.conditions_results[-1] != True
+        self.conditions_results[-1] = not self.conditions_results[-1]
         return True, self
 
     @condition
     def is_from(self, target: str):
         # type: (str) -> (bool, Message)
-        return target in str(self['from']), self
+        return target in self['from'], self
 
     @condition
     def starred(self):
@@ -130,7 +135,7 @@ class Message(MaildirMessage):
     @condition
     def subject_has(self, subject: str):
         # type: (str) -> (bool, Message)
-        return subject in str(self['subject']), self
+        return subject in self['subject'], self
 
     @condition
     def older_than(self, timespec: str):
