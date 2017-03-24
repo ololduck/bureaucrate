@@ -160,7 +160,7 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         False
         >>> m.set_flags('F')
-        >>> m.starred()
+        >>> _ = m.starred()
         >>> m.conditions_results[-1]
         True
         """
@@ -176,11 +176,10 @@ class Message(MaildirMessage):
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         False
-        >>> m.mark_as_read()
+        >>> _ = m.mark_as_read()
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         True
-        :return:
         """
         # type: () -> (bool, Message)
         return 'S' in self.get_flags(), self
