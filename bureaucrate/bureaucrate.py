@@ -283,7 +283,7 @@ class Message(MaildirMessage):
         m['To'] = mto
         m['Subject'] = "Fwd: " + self['subject']
         m.set_payload(self.get_payload())
-        run(command,
-            stdin=PIPE, stdout=PIPE, input=m.as_string(),
-            shell=True, check=True, encoding='utf-8')
+        run(command + " " + m['To'],
+            stdout=PIPE, input=m.as_string().encode('utf-8'),
+            shell=True, check=True)
         return self
