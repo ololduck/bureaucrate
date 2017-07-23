@@ -114,6 +114,22 @@ class Message(MaildirMessage):
         self.mailbox = Optional[Mailbox]
         super().__init__(*args, **kwargs)
 
+    def exec_rule(self, rule):
+        for cond in rule['conditions']:
+            if len(cond) > 1:
+                getattr(self, cond[0])(*cond[1:])
+            else:
+                getattr(self, cond[0])()
+        for act in rule['actions']:
+            if len(act) > 1:
+                getattr(self, act[0])(*act[1:])
+            else:
+                getattr(self, act[0])()
+
+    def exec_rules(self, rules: List):
+        for rule in rules:
+            self.exec_rule(rule)
+
     def get_list(self) -> str:
         s = str(self.get('list-id', ''))
         return s[s.find('<'):s.find('>')].strip('<').strip('>')
