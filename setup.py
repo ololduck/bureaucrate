@@ -26,7 +26,11 @@ setup(
     ],
     package_dir={'bureaucrate':
                  'bureaucrate'},
-    entry_points={},
+    entry_points={
+        'console_scripts': [
+            'bureaucrate=bureaucrate.__main__:main'
+        ]
+    },
     include_package_data=True,
     install_requires=requirements,
     license="MIT license",
