@@ -277,6 +277,11 @@ class Message(MaildirMessage):
         return box.get(key)
 
     @action
+    def archive(self, archive_format='Archives.%Y'):
+        dt = datetime.datetime.fromtimestamp(self.get_date())
+        return self.move_to(dt.strftime(archive_format))
+
+    @action
     def forward(self, command, mto, mfrom=None):
         m = Message()
         m['From'] = mfrom or self['to']
