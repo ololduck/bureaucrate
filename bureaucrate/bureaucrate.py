@@ -276,6 +276,13 @@ class Message(MaildirMessage):
         return box.get(key)
 
     @action
+    def copy(self, box: str):
+        # type: (Mailbox) -> Message
+        box = get_mailbox(box)
+        key = box.add(self)
+        return box.get(key)
+
+    @action
     def forward(self, command, mto, mfrom=None):
         m = Message()
         m['From'] = mfrom or self['to']
