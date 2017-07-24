@@ -1,5 +1,6 @@
-import datetime
 import re
+import datetime
+from shlex import split
 
 
 def parse_timespec(timespec: str) -> datetime.timedelta:
@@ -213,6 +214,8 @@ class Config(object):
         {'conditions': [['is_from', 'sample@test.net'], ['read']], 'actions': [['archive']]}
         >>> Config.parse_rule("if is_from sample@test.net and read then unstar and archive")
         {'conditions': [['is_from', 'sample@test.net'], ['read']], 'actions': [['unstar'], ['archive']]}
+        >>> Config.parse_rule("if is_from 'Hallo leute' then star")
+        {'conditions': [['is_from', 'Hallo leute']], 'actions': [['star']]}
 
         :param line:
         :return: a dict representing the rule
@@ -226,7 +229,7 @@ class Config(object):
         rule['conditions'] = []
         rule['actions'] = []
         for element in conditions:
-            rule['conditions'].append(element.split())
+            rule['conditions'].append(split(element))
         for element in actions:
-            rule['actions'].append(element.split())
+            rule['actions'].append(split(element))
         return rule
