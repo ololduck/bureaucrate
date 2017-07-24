@@ -192,7 +192,12 @@ class Message(MaildirMessage):
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         False
+        >>> m.conditions_results = [] # reset conditional action exec
+        >>> m.conditions_results
+        []
         >>> _ = m.mark_as_read()
+        >>> 'S' in m.get_flags()
+        True
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         True
@@ -263,6 +268,16 @@ class Message(MaildirMessage):
     # actions
     @action
     def mark_as_read(self):
+        """
+        >>> m = Message()
+        >>> 'S' in m.get_flags()
+        False
+        >>> _ = m.mark_as_read()
+        >>> 'S' in m.get_flags()
+        True
+
+        :return:
+        """
         # type: () -> Message
         self.add_flag('S')
         return self
