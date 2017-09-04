@@ -11,11 +11,11 @@ with open('HISTORY.rst') as history_file:
 
 requirements = []
 
-test_requirements = []
+test_requirements = ['nose']
 
 setup(
     name='bureaucrate',
-    version='0.3.0',
+    version='0.3.1',
     description="A maildir-based executer of rules, destined to sort and automate mail",
     long_description=readme + '\n\n' + history,
     author="Paul Ollivier",

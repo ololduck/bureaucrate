@@ -183,7 +183,7 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         False
         >>> m.set_flags('F')
-        >>> m.starred()
+        >>> _ = m.starred()
         >>> m.conditions_results[-1]
         True
         """
@@ -199,11 +199,15 @@ class Message(MaildirMessage):
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         False
-        >>> m.mark_as_read()
+        >>> m.conditions_results = [] # reset conditional action exec
+        >>> m.conditions_results
+        []
+        >>> _ = m.mark_as_read()
+        >>> 'S' in m.get_flags()
+        True
         >>> _ = m.read()
         >>> m.conditions_results[-1]
         True
-        :return:
         """
         # type: () -> (bool, Message)
         return 'S' in self.get_flags(), self
@@ -270,6 +274,16 @@ class Message(MaildirMessage):
     # actions
     @action
     def mark_as_read(self):
+        """
+        >>> m = Message()
+        >>> 'S' in m.get_flags()
+        False
+        >>> _ = m.mark_as_read()
+        >>> 'S' in m.get_flags()
+        True
+
+        :return:
+        """
         # type: () -> Message
         self.add_flag('S')
         return self
@@ -296,6 +310,13 @@ class Message(MaildirMessage):
         box = get_mailbox(box)
         key = box.add(self)
         self.delete()
+        return box.get(key)
+
+    @action
+    def copy(self, box: str):
+        # type: (Mailbox) -> Message
+        box = get_mailbox(box)
+        key = box.add(self)
         return box.get(key)
 
     @action
