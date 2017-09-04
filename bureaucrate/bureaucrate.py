@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import datetime
+import re
+from datetime import datetime
 from email.header import decode_header
 from functools import wraps
 from mailbox import Maildir, MaildirMessage
@@ -8,7 +9,6 @@ from os import listdir
 from os.path import join, expanduser
 from subprocess import run, PIPE
 from typing import List, Optional, Dict
-
 
 from .utils import parse_timespec
 
@@ -23,6 +23,7 @@ class Mailbox(Maildir):
             v.mailbox = self
             v.key = k
             yield v
+
 
 base_path = str
 mailboxes = Dict[str, Mailbox]
@@ -60,6 +61,7 @@ def condition(f):
     """
     Decorator for conditions
     """
+
     @wraps(f)
     def try_execute(*args, **kwargs):
         try:
@@ -75,14 +77,15 @@ def action(f):
     """
     decorator for actions. Reinitialises the conditions_result array after action execution
     """
+
     @wraps(f)
     def decorate(message, *args, **kwargs):
         r = None
         if message.conditions_results.count(True) == \
-                len(message.conditions_results):
+            len(message.conditions_results):
             r = f(message, *args, **kwargs)
-        message.conditions_results = []
         return r or message
+
     return decorate
 
 
@@ -107,7 +110,10 @@ class Message(MaildirMessage):
 
     @staticmethod
     def message_factory(message):
-        return Message(message)
+        m = Message(message)
+        d = datetime.strptime(m['Date'], '%a, %d %b %Y %H:%M:%S %z')
+        m.set_date(d.timestamp())
+        return m
 
     def __init__(self, *args, **kwargs):
         self.conditions_results = []
@@ -129,6 +135,7 @@ class Message(MaildirMessage):
     def exec_rules(self, rules: List):
         for rule in rules:
             self.exec_rule(rule)
+            self.conditions_results = []
 
     def get_list(self) -> str:
         s = str(self.get('list-id', ''))
@@ -229,11 +236,10 @@ class Message(MaildirMessage):
         'timespec' is a simplistic expression of time span, in the form of '\d+[YMDhms]( (\d+[YMDhms]))*'
         """
         # type: (str) -> (bool, Message)
-        now = datetime.datetime.now()
-        if 'd' in timespec:
-            d = now - parse_timespec(timespec)
-            if datetime.fromtimestamp(self.get_date()) < d:
-                return True, self
+        now = datetime.now()
+        d = now + parse_timespec(timespec)
+        if datetime.fromtimestamp(self.get_date()) < d:
+            return True, self
         return False, self
 
     @condition
