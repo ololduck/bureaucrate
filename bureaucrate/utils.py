@@ -1,8 +1,8 @@
-import datetime
+from datetime import datetime, timedelta
 import re
 
 
-def parse_timespec(timespec: str) -> datetime.timedelta:
+def parse_timespec(timespec: str) -> timedelta:
     """
     returns a negative timedelta corresponding to the given timespec
     :param timespec: a space-delimited string of time info. see examples
@@ -23,7 +23,7 @@ def parse_timespec(timespec: str) -> datetime.timedelta:
             seconds -= int(e[:-1]) * 60
         if e[-1:] == 's':
             seconds -= int(e[:-1])
-    return datetime.timedelta(days=days, seconds=seconds)
+    return timedelta(days=days, seconds=seconds)
 
 
 class InvalidConfigurationError(RuntimeError):

@@ -10,6 +10,8 @@ from os.path import join, expanduser
 from subprocess import run, PIPE
 from typing import List, Optional, Dict
 
+from dateutil.parser import parse as dateparse
+
 from .utils import parse_timespec
 
 
@@ -89,6 +91,8 @@ def action(f):
     return decorate
 
 
+
+
 class Message(MaildirMessage):
     """
     Represents a mail message, and its associated conditions and actions
@@ -111,7 +115,7 @@ class Message(MaildirMessage):
     @staticmethod
     def message_factory(message):
         m = Message(message)
-        d = datetime.strptime(m['Date'], '%a, %d %b %Y %H:%M:%S %z')
+        d = dateparse(m['Date'])
         m.set_date(d.timestamp())
         return m
 
@@ -321,7 +325,7 @@ class Message(MaildirMessage):
 
     @action
     def archive(self, archive_format='Archives.%Y'):
-        dt = datetime.datetime.fromtimestamp(self.get_date())
+        dt = datetime.fromtimestamp(self.get_date())
         return self.move_to(dt.strftime(archive_format))
 
     @action
