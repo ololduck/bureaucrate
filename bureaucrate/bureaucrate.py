@@ -47,7 +47,7 @@ def get_mailbox(mb_id: str) -> Mailbox:
     return mb
 
 
-def init(mailbox_base: str, mailbox_names: List[str]=[]) -> List[Mailbox]:
+def init(mailbox_base: str, mailbox_names: List[str]=[]) -> Dict[str, Mailbox]:
     global mailboxes, base_path
     base_path = expanduser(mailbox_base)
     if not mailbox_names:
@@ -89,8 +89,6 @@ def action(f):
         return r or message
 
     return decorate
-
-
 
 
 class Message(MaildirMessage):
@@ -274,6 +272,16 @@ class Message(MaildirMessage):
         """
         # type: () -> (bool, Message)
         return 'R' in self.get_flags(), self
+
+    @condition
+    def is_spam(self):
+        """
+        :return: True if has a Spam header
+        """
+        if 'X-Spam' in self:
+            if re.match(r'[Yy]es|[Tt]rue', self['X-Spam']):
+                return True, self
+        return False, self
 
     # actions
     @action
