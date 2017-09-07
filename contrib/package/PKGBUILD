@@ -2,7 +2,7 @@
 
 pkgname=bureaucrate-git
 _pkgname=bureaucrate
-pkgver=0.3.3
+pkgver=pkgver='0.3.4'
 pkgrel=1
 pkgdesc="A maildir utility to sort mails"
 arch=('any')
