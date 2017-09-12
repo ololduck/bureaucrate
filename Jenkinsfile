@@ -3,19 +3,9 @@ pipeline {
   stages {
     stage('test') {
       steps {
-        parallel(
-          "test": {
-            isUnix()
-            sh '''virtualenv --python=python3 .venv;
-source .venv/bin/activate;
-'''
-            
-          },
-          "build": {
-            sh 'python setup.py build'
-            
-          }
-        )
+        isUnix()
+        sh '''virtualenv --python=python3 .venv;
+source .venv/bin/activate; pip install -r requirements_dev.txt; nosetest --with-doctests bureaucrate'''
       }
     }
   }
