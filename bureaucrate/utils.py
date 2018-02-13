@@ -229,7 +229,7 @@ class Config(object):
         rule['conditions'] = []
         rule['actions'] = []
         for element in conditions:
-            rule['conditions'].append(split(element).strip('"'))
+            rule['conditions'].append(split(element.strip('"')))
         for element in actions:
-            rule['actions'].append(split(element).strip('"'))
+            rule['actions'].append(split(element.strip('"')))
         return rule
