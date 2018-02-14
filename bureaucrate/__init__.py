@@ -4,4 +4,4 @@ from .bureaucrate import init
 
 __author__ = """Paul Ollivier"""
 __email__ = 'contact@paulollivier.fr'
-__version__ = '0.3.7'
+__version__ = '0.3.8'
