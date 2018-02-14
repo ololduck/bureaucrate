@@ -17,7 +17,7 @@ with open('requirements_dev.txt') as devreqs_file:
 
 setup(
     name='bureaucrate',
-    version='0.3.5',
+    version='0.3.6',
     description="A maildir-based executer of rules, destined to sort and automate mail",
     long_description=readme + '\n\n' + history,
     author="Paul Ollivier",
