@@ -9,13 +9,13 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['dateutils']
+requirements = ['dateutils', 'chardet']
 
 test_requirements = ['nose']
 
 setup(
     name='bureaucrate',
-    version='0.3.4',
+    version='0.3.5',
     description="A maildir-based executer of rules, destined to sort and automate mail",
     long_description=readme + '\n\n' + history,
     author="Paul Ollivier",
