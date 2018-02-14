@@ -9,9 +9,11 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['dateutils', 'chardet']
+with open('requirements.txt') as reqs_file:
+    requirements = reqs_file.readlines()
 
-test_requirements = ['nose']
+with open('requirements_dev.txt') as devreqs_file:
+    test_requirements = devreqs_file.readlines()
 
 setup(
     name='bureaucrate',
