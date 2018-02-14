@@ -208,14 +208,17 @@ class Config(object):
 
             if is_from 'sample@test.net' and read then archive
 
-        >>> Config.parse_rule("read then archive")
-        {'conditions': [['read']], 'actions': [['archive']]}
-        >>> Config.parse_rule("if is_from sample@test.net and read then archive")
-        {'conditions': [['is_from', 'sample@test.net'], ['read']], 'actions': [['archive']]}
-        >>> Config.parse_rule("if is_from sample@test.net and read then unstar and archive")
-        {'conditions': [['is_from', 'sample@test.net'], ['read']], 'actions': [['unstar'], ['archive']]}
-        >>> Config.parse_rule("if is_from 'Hallo leute' then star")
-        {'conditions': [['is_from', 'Hallo leute']], 'actions': [['star']]}
+        >>> from pprint import pprint
+        >>> pprint(Config.parse_rule("read then archive"))
+        {'actions': [['archive']], 'conditions': [['read']]}
+        >>> pprint(Config.parse_rule("if is_from sample@test.net and read then archive"))
+        {'actions': [['archive']],
+         'conditions': [['is_from', 'sample@test.net'], ['read']]}
+        >>> pprint(Config.parse_rule("if is_from sample@test.net and read then unstar and archive"))
+        {'actions': [['unstar'], ['archive']],
+         'conditions': [['is_from', 'sample@test.net'], ['read']]}
+        >>> pprint(Config.parse_rule("if is_from 'Hallo leute' then star"))
+        {'actions': [['star']], 'conditions': [['is_from', 'Hallo leute']]}
 
         :param line:
         :return: a dict representing the rule
