@@ -10,9 +10,17 @@ from os.path import join, expanduser
 from subprocess import run, PIPE
 from typing import List, Optional, Dict
 
+from chardet import detect
 from dateutil.parser import parse as dateparse
+from logging import getLogger, basicConfig
 
 from .utils import parse_timespec
+
+
+logger = getLogger(__name__)
+FORMAT = "%(filename)s:%(lineno)3s - %(funcName)15s - %(levelname)s: %(" \
+         "message)s"
+basicConfig(format=FORMAT)
 
 
 class ConditionError(Exception):
@@ -48,6 +56,7 @@ def get_mailbox(mb_id: str) -> Mailbox:
 
 
 def init(mailbox_base: str, mailbox_names: List[str]=[]) -> Dict[str, Mailbox]:
+    logger.info('Initializing mailboxes at %s', mailbox_base)
     global mailboxes, base_path
     base_path = expanduser(mailbox_base)
     if not mailbox_names:
@@ -56,6 +65,7 @@ def init(mailbox_base: str, mailbox_names: List[str]=[]) -> Dict[str, Mailbox]:
     for mailbox_name in mailbox_names:
         mailboxes[mailbox_name] = Mailbox(join(mailbox_base, mailbox_name),
                                           factory=Message.message_factory)
+        logger.debug('mailbox found in %s: %s', mailbox_base, mailbox_name)
     return mailboxes
 
 
@@ -99,11 +109,22 @@ class Message(MaildirMessage):
     def __getitem__(self, name):
         "Let's convert headers to str"
         message = []
+        if name not in self:
+            logger.debug("name not found: %s", name)
+            return ""
         for t in decode_header(super().__getitem__(name)):
+            logger.debug("t: %s", t)
             if type(t[0]) is bytes:
                 if t[1] == 'unknown-8bit':
-                    raise ValueError('Incorrect encoding for Message: %s' %
-                                     super().__getitem__('subject'))
+                    logger.info('found unknown charset: %s', t)
+                    try:
+                        supposition = detect(t[0])
+                        logger.debug('trying to recover as %s', supposition)
+                        message.append(t[0].decode(supposition['encoding']))
+                    except:
+                        logger.error('Failed to recover "%s" as %s', t[0], supposition)
+                        raise ValueError('Incorrect encoding for Message: %s' %
+                                         super().__getitem__('subject'))
                 else:
                     message.append(t[0].decode(t[1] or 'ASCII'))
             if type(t[0]) is str:
@@ -113,6 +134,7 @@ class Message(MaildirMessage):
     @staticmethod
     def message_factory(message):
         m = Message(message)
+        logger.debug(m['Date'])
         d = dateparse(m['Date'])
         m.set_date(d.timestamp())
         return m
@@ -124,11 +146,13 @@ class Message(MaildirMessage):
 
     def exec_rule(self, rule):
         for cond in rule['conditions']:
+            logger.debug("eval cond: %s", cond)
             if len(cond) > 1:
                 getattr(self, cond[0])(*cond[1:])
             else:
                 getattr(self, cond[0])()
         for act in rule['actions']:
+            logger.debug("eval action: %s", act)
             if len(act) > 1:
                 getattr(self, act[0])(*act[1:])
             else:
