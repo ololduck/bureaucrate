@@ -14,6 +14,7 @@ from chardet import detect
 from dateutil.parser import parse as dateparse
 from logging import getLogger, basicConfig
 
+
 from .utils import parse_timespec
 
 
@@ -134,8 +135,16 @@ class Message(MaildirMessage):
     @staticmethod
     def message_factory(message):
         m = Message(message)
+        logger.debug('Handling mail from %s with subject "%s"', m['From'],
+                     m['Subject'])
         logger.debug(m['Date'])
-        d = dateparse(m['Date'])
+        try:
+            d = dateparse(m['Date'])
+        except ValueError:
+            logger.warning('Mail from %s with subject "%s" Does not have a '
+                           '"Date" header! Some features will fail because of '
+                           'this!', m['From'], m['Subject'])
+            d = datetime.now()
         m.set_date(d.timestamp())
         return m
 
