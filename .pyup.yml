@@ -1,4 +1,3 @@
-schedule: "every week"
 requirements:
   - requirements.txt
   - requirements_dev.txt
