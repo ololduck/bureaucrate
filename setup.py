@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from pipenv.project import Project
-from pipenv.utils import convert_deps_to_pip
 from setuptools import setup
 
 with open('README.rst') as readme_file:
@@ -11,10 +9,22 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-pfile = Project(chdir=False).parsed_pipfile
-requirements = convert_deps_to_pip(pfile['packages'], r=False)
-test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
+requirements = [
+    "python-dateutil==2.7.3",
+    "dateutils==0.6.6",
+    "chardet==3.0.4",
+    "notify2==0.3.1",
+]
 
+test_requirements = [
+    "bumpversion",
+    "flake8",
+    "tox",
+    "coverage",
+    "sphinx",
+    "nose",
+    "pipenv",
+]
 
 setup(
     name='bureaucrate',
@@ -28,8 +38,10 @@ setup(
     packages=[
         'bureaucrate',
     ],
-    package_dir={'bureaucrate':
-                 'bureaucrate'},
+    package_dir={
+        'bureaucrate':
+            'bureaucrate'
+    },
     entry_points={
         'console_scripts': [
             'bureaucrate=bureaucrate.__main__:main'
