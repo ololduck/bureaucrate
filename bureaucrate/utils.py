@@ -1,5 +1,5 @@
-from datetime import timedelta
 import re
+from datetime import timedelta
 from shlex import split
 
 
@@ -127,7 +127,7 @@ class Config(object):
                 context.account = None
                 context.glob = True
                 return
-            return InvalidConfigurationError('got } in an global context')
+            raise InvalidConfigurationError('got } in an global context')
 
     def get(self, key, default=None, mb=None, account=None):
         """

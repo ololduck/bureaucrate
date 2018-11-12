@@ -1,11 +1,10 @@
-from sys import argv
-from os.path import expanduser, join
-from argparse import ArgumentParser
-
 import logging
+from argparse import ArgumentParser
+from os.path import expanduser, join
+from sys import argv
 
 from . import __version__
-from .bureaucrate import init
+from .bureaucrate import init, logger
 from .utils import Config
 
 
@@ -29,7 +28,6 @@ def main():
     conf = Config()
     conf.parse(expanduser(opts.get('config')))
 
-    from .bureaucrate import logger
     logger.setLevel(opts.get('loglevel'))
 
     if opts.get('version', None):
@@ -41,6 +39,7 @@ def main():
     else:
         for account in conf.get_accounts():
             process_account(conf, account)
+
 
 if '__main__' in __name__:
     main()

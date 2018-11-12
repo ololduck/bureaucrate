@@ -1,11 +1,8 @@
 from utils import Config
 
 
-def parse_line(resp: str, conf: Config):
-    pass
-
-
-def replmain(conf: Config):
+def repl_main(conf: Config):
+    ctx = Config.Context()
     while True:
         resp = input("brcrt > ")
-        parse_line(resp, conf)
+        conf.parse_line(resp, ctx)

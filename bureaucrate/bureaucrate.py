@@ -4,19 +4,18 @@ import re
 from datetime import datetime
 from email.header import decode_header
 from functools import wraps
-from mailbox import Maildir, MaildirMessage
+from logging import basicConfig, getLogger
+from mailbox import Maildir, MaildirMessage, Message
 from os import listdir
-from os.path import join, expanduser
-from subprocess import run, PIPE
-from typing import List, Optional, Dict
+from os.path import basename, expanduser, join
+from subprocess import PIPE, run
+from typing import Dict, List, Optional, Type
 
 from chardet import detect
 from dateutil.parser import parse as dateparse
-from logging import getLogger, basicConfig
-
+from notify2 import Notification, init as notif_init
 
 from .utils import parse_timespec
-
 
 logger = getLogger(__name__)
 FORMAT = "%(filename)s:%(lineno)3s - %(funcName)15s - %(levelname)s: %(" \
@@ -36,7 +35,15 @@ class Mailbox(Maildir):
             yield v
 
 
-base_path = str
+class Account(object):
+    def __init__(self, _base_path, mailbox_names=None):
+        if mailbox_names is None:
+            mailbox_names = []
+        self.base_path = _base_path
+        self.boxes = mailbox_names
+
+
+base_path: Type[str]
 mailboxes = Dict[str, Mailbox]
 
 
@@ -49,6 +56,7 @@ def get_mailbox(mb_id: str) -> Mailbox:
     """
     global mailboxes
     if mb_id not in mailboxes:
+        # noinspection PyTypeChecker
         mb = Mailbox(join(base_path, mb_id), factory=Message.message_factory)
         mailboxes[mb_id] = mb
     else:
@@ -56,9 +64,12 @@ def get_mailbox(mb_id: str) -> Mailbox:
     return mb
 
 
-def init(mailbox_base: str, mailbox_names: List[str]=[]) -> Dict[str, Mailbox]:
+def init(mailbox_base: str, mailbox_names=None) -> Dict[str, Mailbox]:
+    if mailbox_names is None:
+        mailbox_names = []
     logger.info('Initializing mailboxes at %s', mailbox_base)
     global mailboxes, base_path
+    notif_init(basename(mailbox_base))
     base_path = expanduser(mailbox_base)
     if not mailbox_names:
         mailbox_names = [e for e in listdir(base_path)]
@@ -83,19 +94,21 @@ def condition(f):
             return m
         except Exception as e:
             raise ConditionError(e)
+
     return try_execute
 
 
 def action(f):
     """
-    decorator for actions. Reinitialises the conditions_result array after action execution
+    decorator for actions. Reinitialises the conditions_result array after
+    action execution
     """
 
     @wraps(f)
     def decorate(message, *args, **kwargs):
         r = None
-        if message.conditions_results.count(True) == \
-            len(message.conditions_results):
+        if message.conditions_results.count(True) == len(
+            message.conditions_results):
             r = f(message, *args, **kwargs)
         return r or message
 
@@ -108,7 +121,7 @@ class Message(MaildirMessage):
     """
 
     def __getitem__(self, name):
-        "Let's convert headers to str"
+        """Let's convert headers to str"""
         message = []
         if name not in self:
             logger.debug("name not found: %s", name)
@@ -123,7 +136,8 @@ class Message(MaildirMessage):
                         logger.debug('trying to recover as %s', supposition)
                         message.append(t[0].decode(supposition['encoding']))
                     except:
-                        logger.error('Failed to recover "%s" as %s', t[0], supposition)
+                        logger.error('Failed to recover "%s" as %s', t[0],
+                                     supposition)
                         raise ValueError('Incorrect encoding for Message: %s' %
                                          super().__getitem__('subject'))
                 else:
@@ -186,7 +200,7 @@ class Message(MaildirMessage):
         return True, self
 
     @condition
-    def is_from(self, target: str):
+    def is_from(self, target: str) -> (bool, Message):
         """
         Returns True if target is in From: header
 
@@ -205,11 +219,10 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         False
         """
-        # type: (str) -> (bool, Message)
         return target in self['from'], self
 
     @condition
-    def starred(self):
+    def starred(self) -> (bool, Message):
         """
         Returns True if message is flagged or 'starred'
 
@@ -222,11 +235,10 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         True
         """
-        # type: () -> (bool, Message)
         return 'F' in self.get_flags(), self
 
     @condition
-    def read(self):
+    def read(self) -> (bool, Message):
         """
         Returns True if message is seen or 'read'
 
@@ -244,7 +256,6 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         True
         """
-        # type: () -> (bool, Message)
         return 'S' in self.get_flags(), self
 
     @condition
@@ -264,17 +275,16 @@ class Message(MaildirMessage):
         >>> m.conditions_results[-1]
         False
         """
-        # type: (str) -> (bool, Message)
         return subject in self['subject'], self
 
     @condition
-    def older_than(self, timespec: str):
+    def older_than(self, timespec: str) -> (bool, Message):
         """
         Return True if message is older than 'timespec'.
 
-        'timespec' is a simplistic expression of time span, in the form of '\d+[YMDhms]( (\d+[YMDhms]))*'
+        'timespec' is a simplistic expression of time span, in the form of
+        '\d+[YMDhms]( (\d+[YMDhms]))*'
         """
-        # type: (str) -> (bool, Message)
         now = datetime.now()
         d = now + parse_timespec(timespec)
         if datetime.fromtimestamp(self.get_date()) < d:
@@ -282,28 +292,28 @@ class Message(MaildirMessage):
         return False, self
 
     @condition
-    def is_list(self):
+    def is_list(self) -> (bool, Message):
         """
-        Returns True if the message is destined to a list, and if the corresponding List-Id: header is set
+        Returns True if the message is destined to a list, and if the
+        corresponding List-Id: header is set
         """
-        # type: () -> (bool, Message)
         return "List-Id" in self.keys(), self
 
     @condition
-    def list_is(self, list: str):
-        "Returns True if substring 'list' can be found in header List-Id"
-        # type: (str) -> (bool, Message)
+    def list_is(self, list_id: str) -> (bool, Message):
+        """
+        Returns True if substring 'list' can be found in header List-Id
+        """
         if self.get_list():
-            return list in self.get_list(), self
+            return list_id in self.get_list(), self
         return False, self
 
     @condition
-    def has_replied(self):
+    def has_replied(self) -> (bool, Message):
         """
         Returns True if the message has been replied to
         :return:
         """
-        # type: () -> (bool, Message)
         return 'R' in self.get_flags(), self
 
     @condition
@@ -311,14 +321,13 @@ class Message(MaildirMessage):
         """
         :return: True if has a Spam header
         """
-        if 'X-Spam' in self:
-            if re.match(r'[Yy]es|[Tt]rue', self['X-Spam']):
-                return True, self
+        if 'X-Spam' in self and re.match(r'[Yy]es|[Tt]rue', self['X-Spam']):
+            return True, self
         return False, self
 
     # actions
     @action
-    def mark_as_read(self):
+    def mark_as_read(self) -> Message:
         """
         >>> m = Message()
         >>> 'S' in m.get_flags()
@@ -329,13 +338,11 @@ class Message(MaildirMessage):
 
         :return:
         """
-        # type: () -> Message
         self.add_flag('S')
         return self
 
     @action
-    def star(self):
-        # type: () -> Message
+    def star(self) -> Message:
         self.add_flag('F')
         return self
 
@@ -346,20 +353,22 @@ class Message(MaildirMessage):
         :return: None
         """
         self.add_flag('T')
-        self.mailbox.remove(self.key)
+        try:
+            self.mailbox.remove(self.key)
+        except KeyError:
+            logger.warn("Seems like message %s doesn't exist (anymore?) in "
+                        "mailbox %s.", self.key, self.mailbox.dirname)
         return None
 
     @action
-    def move_to(self, box: str):
-        # type: (Mailbox) -> Message
+    def move_to(self, box: str) -> Message:
         box = get_mailbox(box)
         key = box.add(self)
         self.delete()
         return box.get(key)
 
     @action
-    def copy(self, box: str):
-        # type: (Mailbox) -> Message
+    def copy(self, box: str) -> Message:
         box = get_mailbox(box)
         key = box.add(self)
         return box.get(key)
@@ -370,13 +379,23 @@ class Message(MaildirMessage):
         return self.move_to(dt.strftime(archive_format))
 
     @action
-    def forward(self, command, mto, mfrom=None):
+    def forward(self, command, forward_to, m_from=None):
+        if type(command) is not str:
+            logger.error("Trying to forward message %s without setting the "
+                         "command to use!", command)
         m = Message()
-        m['From'] = mfrom or self['to']
-        m['To'] = mto
+        m['From'] = m_from or self['to']
+        m['To'] = forward_to
         m['Subject'] = "Fwd: " + self['subject']
         m.set_payload(self.get_payload())
         run(command + " " + m['To'],
             stdout=PIPE, input=m.as_string().encode('utf-8'),
             shell=True, check=True)
+        return self
+
+    @action
+    def notify(self):
+        n = Notification(self['From'], self['Subject'],
+                         'notification-message-email')
+        n.show()
         return self

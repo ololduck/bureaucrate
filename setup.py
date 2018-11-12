@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from pipenv.project import Project
+from pipenv.utils import convert_deps_to_pip
 from setuptools import setup
 
 with open('README.rst') as readme_file:
@@ -9,16 +11,16 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-with open('requirements.txt') as reqs_file:
-    requirements = reqs_file.readlines()
+pfile = Project(chdir=False).parsed_pipfile
+requirements = convert_deps_to_pip(pfile['packages'], r=False)
+test_requirements = convert_deps_to_pip(pfile['dev-packages'], r=False)
 
-with open('requirements_dev.txt') as devreqs_file:
-    test_requirements = devreqs_file.readlines()
 
 setup(
     name='bureaucrate',
     version='0.3.8',
-    description="A maildir-based executer of rules, destined to sort and automate mail",
+    description="A maildir-based executer of rules, destined to sort and "
+                "automate mail",
     long_description=readme + '\n\n' + history,
     author="Paul Ollivier",
     author_email='contact@paulollivier.fr',
