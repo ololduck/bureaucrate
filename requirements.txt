@@ -1,0 +1,7 @@
+-i https://pypi.org/simple
+argparse==1.4.0
+chardet==3.0.4
+dateutils==0.6.6
+python-dateutil==2.7.3
+pytz==2018.7
+six==1.11.0

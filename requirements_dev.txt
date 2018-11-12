@@ -1,0 +1,18 @@
+-i https://pypi.org/simple
+-r requirements.txt
+bumpversion==0.5.3
+coverage==4.5.1
+docutils==0.14
+flake8==3.6.0
+mccabe==0.6.1
+nose==1.3.7
+pycodestyle==2.4.0
+pyflakes==2.0.0
+pytz==2018.7
+requests==2.20.1
+six==1.11.0
+sphinx==1.8.2
+sphinxcontrib-websupport==1.1.0
+toml==0.10.0
+tox==3.5.3
+urllib3==1.24.1
