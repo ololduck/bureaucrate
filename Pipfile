@@ -7,7 +7,6 @@ name = "pypi"
 python-dateutil = "==2.7.3"
 dateutils = "==0.6.6"
 chardet = "==3.0.4"
-"notify2" = "==0.3.1"
 
 [dev-packages]
 bumpversion = "*"

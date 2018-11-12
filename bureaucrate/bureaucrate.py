@@ -7,13 +7,12 @@ from functools import wraps
 from logging import basicConfig, getLogger
 from mailbox import Maildir, MaildirMessage, Message
 from os import listdir
-from os.path import basename, expanduser, join
+from os.path import expanduser, join
 from subprocess import PIPE, run
 from typing import Dict, List, Optional, Type
 
 from chardet import detect
 from dateutil.parser import parse as dateparse
-from notify2 import Notification, init as notif_init
 
 from .utils import parse_timespec
 
@@ -69,7 +68,6 @@ def init(mailbox_base: str, mailbox_names=None) -> Dict[str, Mailbox]:
         mailbox_names = []
     logger.info('Initializing mailboxes at %s', mailbox_base)
     global mailboxes, base_path
-    notif_init(basename(mailbox_base))
     base_path = expanduser(mailbox_base)
     if not mailbox_names:
         mailbox_names = [e for e in listdir(base_path)]
@@ -107,8 +105,7 @@ def action(f):
     @wraps(f)
     def decorate(message, *args, **kwargs):
         r = None
-        if message.conditions_results.count(True) == len(
-            message.conditions_results):
+        if message.conditions_results.count(True) == len(message.conditions_results):
             r = f(message, *args, **kwargs)
         return r or message
 
@@ -391,11 +388,4 @@ class Message(MaildirMessage):
         run(command + " " + m['To'],
             stdout=PIPE, input=m.as_string().encode('utf-8'),
             shell=True, check=True)
-        return self
-
-    @action
-    def notify(self):
-        n = Notification(self['From'], self['Subject'],
-                         'notification-message-email')
-        n.show()
         return self
