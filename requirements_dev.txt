@@ -1,7 +1,7 @@
 -i https://pypi.org/simple
 -r requirements.txt
 bumpversion==0.5.3
-coverage==4.5.1
+coverage==4.5.2
 docutils==0.14
 flake8==3.6.0
 mccabe==0.6.1
