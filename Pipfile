@@ -1,21 +1,28 @@
 [[source]]
+
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+
 [packages]
-python-dateutil = "==2.7.3"
+
+python-dateutil = "==2.8.0"
 dateutils = "==0.6.6"
 chardet = "==3.0.4"
 
+
 [dev-packages]
+
 bumpversion = "*"
-"flake8" = "*"
+flake8 = "*"
 tox = "*"
 coverage = "*"
 sphinx = "*"
 nose = "*"
 pipenv = "*"
 
+
 [requires]
+
 python_version = "3.7"
