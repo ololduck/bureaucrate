@@ -341,11 +341,10 @@
         },
         "tox": {
             "hashes": [
-                "sha256:513e32fdf2f9e2d583c2f248f47ba9886428c949f068ac54a0469cac55df5862",
-                "sha256:75fa30e8329b41b664585f5fb837e23ce1d7e6fa1f7811f2be571c990f9d911b"
+                "sha256:5358eae59e3bdba5d9bd0794331854e36250e62fa3cf7d4059ae730bfe5ca432",
+                "sha256:b7f8eb013c1c5fd758b272d4af97eeba168e6ea3fb604004582fce5aef0771c2"
             ],
-            "index": "pypi",
-            "version": "==3.5.3"
+            "version": "==3.11.0"
         },
         "urllib3": {
             "hashes": [
