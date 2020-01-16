@@ -4,4 +4,4 @@ chardet==3.0.4
 dateutils==0.6.6
 python-dateutil==2.7.3
 pytz==2018.7
-six==1.11.0
+six==1.14.0
