@@ -10,7 +10,7 @@ pycodestyle==2.4.0
 pyflakes==2.0.0
 pytz==2018.7
 requests==2.20.1
-six==1.11.0
+six==1.14.0
 sphinx==1.8.2
 sphinxcontrib-websupport==1.1.0
 toml==0.10.0
